@@ -1,3 +1,5 @@
+// index.tsx
+
 import React, { useEffect, useState } from "react";
 import DishCard from "@/components/DishCard";
 import LoadMore from "@/components/LoadMore";
@@ -12,7 +14,7 @@ interface Filters {
   ingredients: string[];
 }
 
-const Home = () => {
+function Home() {
   const [meals, setMeals] = useState<DishProp[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState<Filters>({
@@ -23,9 +25,7 @@ const Home = () => {
 
   const fetchMeals = async (appliedFilters: Filters) => {
     setIsLoading(true);
-    let fetchedMeals: DishProp[] = [];
 
-    // First, fetch the filtered meal IDs as before
     try {
       const queryParams = new URLSearchParams();
       if (appliedFilters.category)
@@ -34,45 +34,31 @@ const Home = () => {
       appliedFilters.ingredients.forEach((ingredient) =>
         queryParams.append("i", ingredient)
       );
-      const filterUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?${queryParams.toString()}`;
+      const url = `https://www.themealdb.com/api/json/v1/1/filter.php?${queryParams.toString()}`;
 
-      const filterResponse = await fetch(filterUrl);
-      const filterData = await filterResponse.json();
-      fetchedMeals = filterData.meals || [];
+      const response = await fetch(url);
+      const data = await response.json();
+      const mealsData: DishProp[] = data.meals || [];
+      setMeals(mealsData);
     } catch (error) {
       console.error("Failed to fetch meals:", error);
+      // Notify user of the error if you have a notification system
+    } finally {
+      setIsLoading(false);
     }
-
-    // Then, for each meal, fetch the full details including the area
-    const detailedMealsPromises = fetchedMeals.map(async (meal: DishProp) => {
-      const detailUrl = `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`;
-      const detailResponse = await fetch(detailUrl);
-      const detailData = await detailResponse.json();
-      return detailData.meals[0];
-    });
-
-    Promise.all(detailedMealsPromises)
-      .then((detailedMeals) => {
-        setMeals(detailedMeals);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch meal details:", error);
-        setIsLoading(false);
-      });
   };
 
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    fetchMeals(filters);
-  }, []); 
-
+  // Handle filter change and fetch data
   const handleFilterChange = (newFilters: Partial<Filters>) => {
     const appliedFilters = { ...filters, ...newFilters };
     setFilters(appliedFilters);
-    fetchMeals(appliedFilters); // Fetch meals with new filters
+    fetchMeals(appliedFilters);
   };
+
+  // Fetch meals on mount
+  useEffect(() => {
+    fetchMeals(filters);
+  }, []); // The empty array ensures this effect only runs once on mount
 
   return (
     <main className="sm:p-16 py-16 px-8 flex flex-col gap-10">
@@ -93,6 +79,6 @@ const Home = () => {
       <LoadMore setMeals={setMeals} />
     </main>
   );
-};
+}
 
 export default Home;
