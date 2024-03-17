@@ -1,5 +1,3 @@
-// E:\sites\CUISINE-NEXT\app\layout.tsx
-
 import React from "react";
 import Head from "next/head";
 import { DM_Sans } from "next/font/google";

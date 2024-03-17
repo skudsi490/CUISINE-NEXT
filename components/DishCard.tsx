@@ -16,6 +16,8 @@ interface Prop {
 }
 
 const DishCard: React.FC<Prop> = ({ dish }) => {
+  const areaDisplay = dish.strArea || "Area not specified";
+
   return (
     <Link href={`/${dish.idMeal}`} passHref>
       <div className="max-w-sm rounded relative w-full">
@@ -38,8 +40,7 @@ const DishCard: React.FC<Prop> = ({ dish }) => {
               </p>
             </div>
           </div>
-          <p className="text-base text-white font-bold">Area: {dish.strArea}</p>
-
+          <p className="text-base text-white font-bold">Area: {areaDisplay}</p>
         </div>
       </div>
     </Link>
